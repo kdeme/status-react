@@ -11,7 +11,7 @@
 (def i18n                   (js/require "react-native-i18n"))
 (def image-crop-picker      #js {})
 (def image-resizer          #js {})
-(def instabug               #js {:IBGLog ( fn [])})
+(def instabug               #js {:IBGLog (fn [])})
 (def keychain               (js/require "react-native-keychain"))
 (def nfc                    #js {})
 (def qr-code                (js/require "react-native-qrcode"))
