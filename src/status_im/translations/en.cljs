@@ -105,6 +105,10 @@
    :delete-message                       "Delete message"
    :sent-at                              "Sent at"
 
+   ;;notifications
+   :notifications-new-message-body       "You have new message"
+   :notifications-new-message-title      "Status"
+
    ;;datetime
    :datetime-ago-format                  "{{number}} {{time-intervals}} {{ago}}"
    :datetime-second                      {:one   "second"

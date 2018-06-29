@@ -1,7 +1,9 @@
 (ns status-im.chat.models.message
   (:require [re-frame.core :as re-frame]
             [status-im.constants :as constants]
+            [status-im.i18n :as i18n]
             [status-im.utils.core :as utils]
+            [status-im.utils.config :as config]
             [status-im.utils.ethereum.core :as ethereum]
             [status-im.utils.datetime :as time]
             [status-im.chat.events.console :as console-events]
@@ -12,6 +14,7 @@
             [status-im.utils.clocks :as utils.clocks]
             [status-im.utils.handlers-macro :as handlers-macro]
             [status-im.utils.money :as money]
+            [status-im.utils.notifications :as notifications]
             [status-im.transport.utils :as transport.utils]
             [status-im.transport.message.core :as transport]
             [status-im.transport.message.v1.protocol :as protocol]
@@ -158,6 +161,16 @@
                             request-command))
       message)))
 
+(defn- display-notification [chat-id cofx]
+  (when config/in-app-notifications-enabled?
+    (let [view-id (get-in cofx [:db :view-id])
+          current-chat-id (get-in cofx [:db :current-chat-id])]
+      (when-not (and (= :chat view-id)
+                     (= current-chat-id chat-id))
+        {:display-notification-fx {:title   (i18n/label :notifications-new-message-title)
+                                   :body    (i18n/label :notifications-new-message-body)
+                                   :chat-id chat-id}}))))
+
 (defn- add-received-message
   [batch?
    {:keys [from message-id chat-id content content-type clock-value js-obj] :as raw-message}
@@ -182,6 +195,7 @@
                                                                       current-chat? :seen
                                                                       :else :received))
                              (requests-events/add-request chat-id message-id)
+                             (display-notification chat-id)
                              (send-message-seen chat-id message-id (and (not public?)
                                                                         current-chat?
                                                                         (not (chat-model/bot-only-chat? db chat-id))
@@ -329,8 +343,10 @@
 
 (defn send-push-notification [fcm-token status cofx]
   (when (and fcm-token (= status :sent))
-    {:send-notification {:message "message"
-                         :payload {:title "Status" :body "You have a new message"}
+    {:send-notification {:message (get-in cofx [:db :current-public-key])
+                         :payload {:title (i18n/label :notifications-new-message-title)
+                                   :body  (i18n/label :notifications-new-message-body)
+                                   :sound notifications/sound-name}
                          :tokens  [fcm-token]}}))
 
 (defn update-message-status [{:keys [chat-id message-id from]} status {:keys [db]}]

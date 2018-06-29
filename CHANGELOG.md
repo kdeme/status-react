@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Persist browser history
 - Added refresh button
 - Added more dapps
+- Sound for Push Notifications, tap on PN opens corresponding chat
 
 ### Fixed
 - Fixed Sign in: Cannot paste text within password field [#3931]
