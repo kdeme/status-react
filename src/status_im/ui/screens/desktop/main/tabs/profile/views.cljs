@@ -76,5 +76,5 @@
 
 (views/defview profile-data []
   (views/letsubs
-   [user [:get-current-account]]
-   [profile user]))
+    [user [:get-current-account]]
+    [profile user]))

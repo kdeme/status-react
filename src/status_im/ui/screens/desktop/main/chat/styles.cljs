@@ -65,20 +65,20 @@
    :height       40
    :margin-right 8})
 
-(def photo-style-toolbar
-  {:border-radius 32
-   :width         32
-   :height        32
-   :margin-right  8})
+(def chat-icon
+  {:width         34
+   :border-radius 34
+   :height        34
+   :margin-right  12})
 
 (defn topic-image [color]
-  (merge photo-style-toolbar
+  (merge chat-icon
          {:background-color color
           :align-items      :center
           :justify-content  :center}))
 
 (def topic-text
-  {:font-size 18
+  {:font-size 18.7
    :color     colors/white})
 
 (def toolbar-chat-view
@@ -97,9 +97,9 @@
   {:font-size 12
    :color colors/gray})
 
-(def profile-actions-text
+(defn profile-actions-text [color]
   {:font-size 12
-   :color colors/red
+   :color color
    :margin-bottom 4})
 
 (def message-text
@@ -155,22 +155,6 @@
   {:color         colors/gray
    :margin-top    10
    :margin-bottom 5})
-
-(def chat-icon
-  {:width         34
-   :border-radius 34
-   :height        34
-   :margin-right  12})
-
-(defn topic-image [color]
-  (merge chat-icon
-         {:background-color color
-          :align-items      :center
-          :justify-content  :center}))
-
-(def topic-text
-  {:font-size 18.7
-   :color     colors/white})
 
 (defn chat-title-and-type [pending?]
   {:flex 1

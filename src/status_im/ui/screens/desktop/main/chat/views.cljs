@@ -46,25 +46,24 @@
               (i18n/label :t/public-chat)])]]
      [react/view
       (when (and (not group-chat) (not public?))
-        [react/text {:style {:position :absolute
-                             :right 20}
+        [react/text {:style (styles/profile-actions-text colors/black)
                      :on-press #(re-frame/dispatch [:navigate-to :chat-profile])}
          (i18n/label :t/view-profile)])
-      [react/touchable-highlight
-       {:on-press (fn []
-                    (utils/show-confirmation (i18n/label :clear-history-confirmation)
-                                             ""
-                                             (i18n/label :clear-history-action)
-                                             #(re-frame/dispatch [:clear-history])))}
-       [react/text {:style styles/profile-actions-text}
-        (i18n/label :t/clear-history)]]
-      [react/touchable-highlight  {:on-press (fn []
-                                               (utils/show-confirmation (i18n/label :delete-chat-confirmation)
-                                                                        ""
-                                                                        (i18n/label :delete-chat-action)
-                                                                        #(re-frame/dispatch [:remove-chat-and-navigate-home chat-id])))}
-       [react/text {:style styles/profile-actions-text}
-        (i18n/label :t/delete-chat)]]]]))
+
+      [react/text {:style (styles/profile-actions-text colors/red)
+                   :on-press (fn []
+                               (utils/show-confirmation (i18n/label :clear-history-confirmation)
+                                                        ""
+                                                        (i18n/label :clear-history-action)
+                                                        #(re-frame/dispatch [:clear-history])))}
+       (i18n/label :t/clear-history)]
+      [react/text {:style (styles/profile-actions-text colors/red)
+                   :on-press (fn []
+                               (utils/show-confirmation (i18n/label :delete-chat-confirmation)
+                                                        ""
+                                                        (i18n/label :delete-chat-action)
+                                                        #(re-frame/dispatch [:remove-chat-and-navigate-home chat-id])))}
+       (i18n/label :t/delete-chat)]]]))
 
 (views/defview message-author-name [{:keys [outgoing from] :as message}]
   (views/letsubs [current-account [:get-current-account]
@@ -210,29 +209,29 @@
 
 (views/defview chat-profile []
   (views/letsubs [{:keys [pending? whisper-identity public-key] :as contact} [:get-current-chat-contact]]
-                 [react/view {:style styles/chat-profile-body}
-                  [profile.views/profile-badge contact]
+    [react/view {:style styles/chat-profile-body}
+     [profile.views/profile-badge contact]
                   ;; for private chat, public key will be chat-id
-                  [react/view
-                   (if pending?
-                     [react/touchable-highlight {:on-press #(re-frame/dispatch [:add-contact whisper-identity])}
-                      [react/view {:style styles/chat-profile-row}
-                       [react/view {:style styles/chat-profile-icon-container
-                                    :accessibility-label :add-contact-link}
-                        [vector-icons/icon :icons/add {:style (styles/chat-profile-icon colors/blue)}]]
-                       [react/text {:style (styles/contact-card-text colors/blue)} (i18n/label :t/add-to-contacts)]]]
-                     [react/view {:style styles/chat-profile-row}
-                       [react/view {:style styles/chat-profile-icon-container
-                                    :accessibility-label :add-contact-link}
-                        [vector-icons/icon :icons/add {:style (styles/chat-profile-icon colors/gray)}]]
-                      [react/text {:style (styles/contact-card-text colors/gray)} (i18n/label :t/in-contacts)]])
-                   [react/touchable-highlight {:on-press #(re-frame/dispatch [:navigate-to-chat public-key])}
-                    [react/view {:style styles/chat-profile-row}
-                     [react/view {:style styles/chat-profile-icon-container
-                                  :accessibility-label :send-message-link}
-                      [vector-icons/icon :icons/chats {:style (styles/chat-profile-icon colors/blue)}]]
-                     [react/text {:style (styles/contact-card-text colors/blue)}
-                      (i18n/label :t/send-message)]]]
-                   [react/text {:style styles/chat-profile-contact-code} (i18n/label :t/contact-code)]
-                   [react/text {:style      {:font-size 14}
-                                :selectable true} public-key]]]))
+     [react/view
+      (if pending?
+        [react/touchable-highlight {:on-press #(re-frame/dispatch [:add-contact whisper-identity])}
+         [react/view {:style styles/chat-profile-row}
+          [react/view {:style styles/chat-profile-icon-container
+                       :accessibility-label :add-contact-link}
+           [vector-icons/icon :icons/add {:style (styles/chat-profile-icon colors/blue)}]]
+          [react/text {:style (styles/contact-card-text colors/blue)} (i18n/label :t/add-to-contacts)]]]
+        [react/view {:style styles/chat-profile-row}
+         [react/view {:style styles/chat-profile-icon-container
+                      :accessibility-label :add-contact-link}
+          [vector-icons/icon :icons/add {:style (styles/chat-profile-icon colors/gray)}]]
+         [react/text {:style (styles/contact-card-text colors/gray)} (i18n/label :t/in-contacts)]])
+      [react/touchable-highlight {:on-press #(re-frame/dispatch [:navigate-to-chat public-key])}
+       [react/view {:style styles/chat-profile-row}
+        [react/view {:style styles/chat-profile-icon-container
+                     :accessibility-label :send-message-link}
+         [vector-icons/icon :icons/chats {:style (styles/chat-profile-icon colors/blue)}]]
+        [react/text {:style (styles/contact-card-text colors/blue)}
+         (i18n/label :t/send-message)]]]
+      [react/text {:style styles/chat-profile-contact-code} (i18n/label :t/contact-code)]
+      [react/text {:style      {:font-size 14}
+                   :selectable true} public-key]]]))
