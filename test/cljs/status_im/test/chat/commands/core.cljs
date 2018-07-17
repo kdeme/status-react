@@ -12,27 +12,24 @@
   (id [_]
     :test-command)
   (scope [_]
-    #{:personal-chats :group-chats :public-chats :requested})
+    #{:personal-chats :group-chats :public-chats})
   (parameters [_]
-    [{:id :first-param
+    [{:id   :first-param
       :type :text
       ;; pass function as mock-up for suggestions component, so we can
       ;; just test the correct injection of `:set-command-parameter` event
       :suggestions fake-suggestion}
-     {:id :second-param
+     {:id   :second-param
       :type :text}
-     {:id :last-param
+     {:id   :last-param
       :type :text
       :suggestions fake-suggestion}])
   (validate [_ parameters _]
     (when-not (every? (comp string? second) parameters)
-      "Not all parameters are filled and of the correc type"))
-  (yield-control [_ _ _]
-    nil)
-  (on-send [_ _ _ _]
-    nil)
-  (on-receive [_ _ _]
-    nil)
+      "Not all parameters are filled and of the correct type"))
+  (yield-control [_ _ _])
+  (on-send [_ _ _ _])
+  (on-receive [_ _ _])
   (short-preview [_ command-message _]
     [:text (str "Test-command, first-param: "
                 (get-in command-message [:content :params :first-param]))])
@@ -41,10 +38,35 @@
                 (apply str (map [:first-param :second-param :last-param]
                                 (get-in command-message [:content :params]))))]))
 
+(deftype AnotherTestCommand []
+  protocol/Command
+  (id [_]
+    :another-test-command)
+  (scope [_]
+    #{:public-chats})
+  (parameters [_]
+    [{:id   :first-param
+      :type :text}])
+  (validate [_ parameters _]
+    (when-not (every? (comp string? second) parameters)
+      "Not all parameters are filled and of the correct type"))
+  (yield-control [_ _ _])
+  (on-send [_ _ _ _])
+  (on-receive [_ _ _])
+  (short-preview [_ command-message _]
+    [:text (str "Test-command, first-param: "
+                (get-in command-message [:content :params :first-param]))])
+  (preview [_ command-message _]
+    [:text (str "Test-command, params: "
+                (apply str (map [:first-param]
+                                (get-in command-message [:content :params]))))]))
+
+
 (def TestCommandInstance (TestCommand.))
+(def AnotherTestCommandInstance (AnotherTestCommand.))
 
 (deftest index-commands-test
-  (let [fx (core/index-commands #{TestCommandInstance} {:db {}})]
+  (let [fx (core/index-commands #{TestCommandInstance AnotherTestCommandInstance} {:db {}})]
     (testing "Primary composite key index for command is correctly created"
       (is (= TestCommandInstance
              (get-in fx [:db :id->command
@@ -61,12 +83,41 @@
                           2 :suggestions])
               "last-value"))))
     (testing "Access scope indexes are correctly created"
-      (is (= (get-in fx [:db :access-scope->command-id #{:personal-chats :requested}])
-             (core/command-id TestCommandInstance)))
-      (is (= (get-in fx [:db :access-scope->command-id #{:group-chats :requested}])
-             (core/command-id TestCommandInstance)))
-      (is (= (get-in fx [:db :access-scope->command-id #{:public-chats :requested}])
-             (core/command-id TestCommandInstance))))))
+      (is (contains? (get-in fx [:db :access-scope->command-id #{:personal-chats}])
+                     (core/command-id TestCommandInstance)))
+      (is (not (contains? (get-in fx [:db :access-scope->command-id #{:personal-chats}])
+                          (core/command-id AnotherTestCommandInstance))))
+      (is (contains? (get-in fx [:db :access-scope->command-id #{:group-chats}])
+                     (core/command-id TestCommandInstance)))
+      (is (contains? (get-in fx [:db :access-scope->command-id #{:public-chats}])
+                     (core/command-id TestCommandInstance)))
+      (is (contains? (get-in fx [:db :access-scope->command-id #{:public-chats}])
+                     (core/command-id AnotherTestCommandInstance))))))
+
+(deftest chat-commands-test
+  (let [fx (core/index-commands #{TestCommandInstance AnotherTestCommandInstance} {:db {}})]
+    (testing "That relevant commands are looked up for chat"
+      (is (= #{TestCommandInstance AnotherTestCommandInstance}
+             (into #{}
+                   (map (comp :type second))
+                   (core/chat-commands (get-in fx [:db :id->command])
+                                       (get-in fx [:db :access-scope->command-id])
+                                       {:chat-id    "topic"
+                                        :group-chat true
+                                        :public?    true}))))
+      (is (= #{TestCommandInstance}
+             (into #{}
+                   (map (comp :type second))
+                   (core/chat-commands (get-in fx [:db :id->command])
+                                       (get-in fx [:db :access-scope->command-id])
+                                       {:chat-id    "group"
+                                        :group-chat true}))))
+      (is (= #{TestCommandInstance}
+             (into #{}
+                   (map (comp :type second))
+                   (core/chat-commands (get-in fx [:db :id->command])
+                                       (get-in fx [:db :access-scope->command-id])
+                                       {:chat-id "contact"})))))))
 
 (deftest set-command-parameter-test
   (testing "Setting command parameter correctly updates the text input"

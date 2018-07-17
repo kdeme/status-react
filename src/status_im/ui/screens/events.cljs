@@ -15,8 +15,7 @@
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.universal-links.core :as universal-links]
             [status-im.utils.dimensions :as dimensions]
-            status-im.utils.universal-links.events
-            [status-im.chat.commands.core :as commands]
+            status-im.utils.universal-links.events 
             status-im.ui.screens.add-new.new-chat.navigation
             status-im.ui.screens.network-settings.events
             status-im.ui.screens.profile.events

@@ -65,7 +65,7 @@
   (is (= "" (input/join-command-args [""])))
   (is (= "/send 1.0 \"John Doe\"" (input/join-command-args ["/send" "1.0" "John Doe"]))))
 
-(deftest selected-chat-command
+#_(deftest selected-chat-command
   (is (= (input/selected-chat-command (-> fake-db
                                           (assoc :current-chat-id "test1")
                                           (assoc-in [:chats "test1" :input-text] "/global-command1")))

@@ -8,7 +8,7 @@
 (def ^:private command-char "/")
 (def ^:private space-char " ")
 
-(def commands-register
+(def register
   "Register of all commands. Whenever implementing a new command,
   provide the implementation in the `status-im.chat.commands.impl.*` ns,
   and add its instance here."
@@ -73,9 +73,10 @@
                                                                    (protocol/scope type)
                                                                    protocol/or-scopes)]
                                                 (reduce (fn [acc access-scope]
-                                                          (assoc acc
-                                                                 access-scope
-                                                                 command-id))
+                                                          (update acc
+                                                                  access-scope
+                                                                  (fnil conj #{})
+                                                                  command-id))
                                                         acc
                                                         access-scopes)))
                                             {}
@@ -83,6 +84,18 @@
     {:db (assoc db
                 :id->command              id->command
                 :access-scope->command-id access-scope->command-id)}))
+
+(defn chat-commands
+  "Takes `id->command`, `access-scope->command-id` and `chat` parameters and returns
+  entries from `id->command` map eligible for given chat."
+  [id->command access-scope->command-id {:keys [chat-id group-chat public?]}]
+  (let [global-access-scope (cond-> #{}
+                              (not group-chat) (conj :personal-chats)
+                              (and group-chat (not public?)) (conj :group-chats) 
+                              public? (conj :public-chats)) 
+        chat-access-scope   (conj global-access-scope chat-id)] 
+    (select-keys id->command (into (get access-scope->command-id global-access-scope)
+                                   (get access-scope->command-id chat-access-scope)))))
 
 (defn set-command-parameter
   "Set value as command parameter for the current chat"

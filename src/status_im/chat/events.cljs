@@ -6,8 +6,8 @@
             [status-im.i18n :as i18n]
             [status-im.chat.models :as models]
             [status-im.chat.models.message :as models.message]
-            [status-im.chat.console :as console]
-            [status-im.commands.events.loading :as events.loading]
+            [status-im.chat.console :as console] 
+            [status-im.chat.commands.core :as commands]
             [status-im.ui.screens.navigation :as navigation]
             [status-im.utils.handlers :as handlers]
             [status-im.utils.handlers-macro :as handlers-macro]
@@ -138,12 +138,9 @@
                               (assoc constants/console-chat-id console/contact))
         existing-contacts (:contacts/contacts db)
         contacts-to-add   (select-keys new-contacts (set/difference (set (keys new-contacts))
-                                                                    (set (keys existing-contacts))))]
-    (handlers-macro/merge-fx cofx
-                             {:db            (update db :contacts/contacts merge contacts-to-add)
-                              :data-store/tx [(contacts-store/save-contacts-tx
-                                               (vals contacts-to-add))]}
-                             (events.loading/load-commands))))
+                                                                    (set (keys existing-contacts))))] 
+    {:db            (update db :contacts/contacts merge contacts-to-add)
+     :data-store/tx [(contacts-store/save-contacts-tx (vals contacts-to-add))]}))
 
 (defn- group-chat-messages
   [{:keys [db]}]
@@ -195,7 +192,8 @@
                                           :contacts/dapps default-dapps)}
                               (init-console-chat)
                               (group-chat-messages)
-                              (add-default-contacts)))))
+                              (add-default-contacts)
+                              (commands/index-commands commands/register)))))
 
 (defn- send-messages-seen [chat-id message-ids {:keys [db] :as cofx}]
   (when (and (not (get-in db [:chats chat-id :public?]))

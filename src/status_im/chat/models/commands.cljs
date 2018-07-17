@@ -10,27 +10,24 @@
              {}
              name->ref))
 
-(defn- is-dapp? [all-contacts identity]
-  (get-in all-contacts [identity :dapp?]))
-
 (defn command-name [{:keys [name]}]
   (str chat-consts/command-char name))
 
-(defn commands-responses
-  "Returns map of commands/responses eligible for current chat."
-  [type access-scope->commands-responses {:keys [address]} {:keys [contacts group-chat public?]} all-contacts]
-  (let [dapps?             (some (partial is-dapp? all-contacts) contacts)
-        humans?            (some (comp not (partial is-dapp? all-contacts)) contacts)
-        basic-access-scope (cond-> #{}
-                             group-chat (conj :group-chats)
-                             (not group-chat) (conj :personal-chats)
-                             address (conj :registered)
-                             (not address) (conj :anonymous)
-                             dapps? (conj :dapps)
-                             humans? (conj :humans)
-                             public? (conj :public-chats))
-        global-access-scope (conj basic-access-scope :global)
-        member-access-scopes (into #{} (map (partial conj basic-access-scope)) contacts)]
+(defn commands-responses [_ _ _ _ _])
+#_(defn commands
+  "Returns map of commands eligible for current chat."
+  [id->command access-scope->command-id {:keys [chat-id group-chat public?]}]
+  (let [global-access-scope (cond-> #{}
+                              (not group-chat) (conj :personal-chats)
+                              group-chat (conj :group-chats) 
+                              public? (conj :public-chats)) 
+        chat-access-scope   (conj global-access-scope chat-id)] 
+    (reduce (fn [acc command-id]
+              )
+            {}
+            (into (get-in id->command global-access-scope)
+                  (get-in id->command chat-access-scope)))
+    
     (reduce (fn [acc access-scope]
               (merge acc (resolve-references all-contacts
                                              (get-in access-scope->commands-responses [access-scope type]))))

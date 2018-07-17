@@ -93,8 +93,8 @@
         [input-helper {:width width}]]])))
 
 (defview commands-button []
-  (letsubs [commands-responses [:get-available-commands-responses]]
-    (when (seq commands-responses)
+  (letsubs [commands [:get-all-available-commands]]
+    (when (seq commands)
       [react/touchable-highlight
        {:on-press            #(do (re-frame/dispatch [:set-chat-input-text constants/command-char])
                                   (re-frame/dispatch [:chat-input-focus :input-ref]))

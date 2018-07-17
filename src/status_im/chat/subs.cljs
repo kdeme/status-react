@@ -247,8 +247,8 @@
 
 (def ^:private map->sorted-seq (comp (partial map second) (partial sort-by first)))
 
-(defn- available-commands-responses [[commands-responses {:keys [input-text]}]]
-  (->> commands-responses
+(defn- available-commands [[commands {:keys [input-text]}]]
+  (->> commands
        map->sorted-seq
        (filter (fn [item]
                  (when (input-model/starts-as-command? input-text)
@@ -258,20 +258,13 @@
  :get-available-commands
  :<- [:get-commands-for-chat]
  :<- [:get-current-chat]
- available-commands-responses)
+ available-commands)
 
 (reg-sub
- :get-available-responses
- :<- [:get-responses-for-chat]
- :<- [:get-current-chat]
- available-commands-responses)
-
-(reg-sub
- :get-available-commands-responses
- :<- [:get-commands-for-chat]
- :<- [:get-responses-for-chat]
- (fn [[commands responses]]
-   (map->sorted-seq (merge commands responses))))
+ :get-all-available-commands
+ :<- [:get-commands-for-chat] 
+ (fn [commands]
+   (map->sorted-seq commands)))
 
 (reg-sub
  :selected-chat-command
@@ -345,10 +338,10 @@
  :<- [:get-current-chat-ui-prop :show-suggestions?]
  :<- [:get-current-chat]
  :<- [:selected-chat-command]
- :<- [:get-available-commands-responses]
- (fn [[show-suggestions? {:keys [input-text]} selected-command commands-responses]]
+ :<- [:get-all-available-commands]
+ (fn [[show-suggestions? {:keys [input-text]} selected-command commands]]
    (and (or show-suggestions? (input-model/starts-as-command? (string/trim (or input-text ""))))
-        (seq commands-responses))))
+        (seq commands))))
 
 (reg-sub
  :show-suggestions?

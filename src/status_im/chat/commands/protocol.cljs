@@ -15,8 +15,7 @@
      `id-of-the-any-chat` - command if available only for the specified chat
      `:personal-chats` - command is available for any personal 1-1 chat
      `:group-chats` - command is available for any group chat
-     `:public-chats` - command is available for any public chat
-     `:requested` - command is available only when there is an outstanding request")
+     `:public-chats` - command is available for any public chat ")
   (parameters [this]
     "Ordered sequence of command parameter templates, where each parameter 
      is defined as map consisting of mandatory `:id`, `:title` and `:type` keys, 
