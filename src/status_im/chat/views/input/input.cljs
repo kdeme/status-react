@@ -5,8 +5,7 @@
             [re-frame.core :as re-frame]
             [status-im.chat.constants :as constants]
             [status-im.chat.styles.input.input :as style]
-            [status-im.chat.views.input.parameter-box :as parameter-box]
-            [status-im.chat.views.input.result-box :as result-box]
+            [status-im.chat.views.input.parameter-box :as parameter-box] 
             [status-im.chat.views.input.send-button :as send-button]
             [status-im.chat.views.input.suggestions :as suggestions]
             [status-im.chat.views.input.validation-messages :as validation-messages]
@@ -122,8 +121,7 @@
 
 (defn container []
   [react/view
-   [parameter-box/parameter-box-view]
-   [result-box/result-box-view]
+   [parameter-box/parameter-box-view] 
    [suggestions/suggestions-view]
    [validation-messages/validation-messages-view]
    [input-container]])

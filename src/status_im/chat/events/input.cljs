@@ -8,6 +8,7 @@
             [status-im.chat.models.commands :as commands-model]
             [status-im.chat.models.message :as message-model]
             [status-im.chat.events.commands :as commands-events]
+            [status-im.chat.commands.core :as commands]
             [status-im.bots.events :as bots-events]
             [status-im.utils.ethereum.tokens :as tokens]
             [status-im.ui.components.react :as react-comp]
@@ -347,7 +348,7 @@
   (= :complete (input-model/command-completion chat-command)))
 
 (defn command-complete-fx
-  "command is complete, set `:sendint-in-progress?` flag and proceed with command processing"
+  "command is complete, set `:sending-in-progress?` flag and proceed with command processing"
   [db chat-command message-id current-time]
   (-> db
       (model/set-chat-ui-props {:sending-in-progress? true})

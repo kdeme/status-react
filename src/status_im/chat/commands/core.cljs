@@ -1,5 +1,6 @@
 (ns status-im.chat.commands.core
   (:require [clojure.set :as set]
+            [clojure.string :as string]
             [status-im.chat.commands.protocol :as protocol]
             [status-im.chat.commands.impl.transactions :as transactions]
             [status-im.chat.models.input :as input-model]))
@@ -87,15 +88,68 @@
 
 (defn chat-commands
   "Takes `id->command`, `access-scope->command-id` and `chat` parameters and returns
-  entries from `id->command` map eligible for given chat."
+  entries map of `id->command` map eligible for given chat.
+  Note that the result map is keyed just by `protocol/id` of command entries,
+  not the unique composite ids of the global `id->command` map.
+  That's because this function is already returning local commands for particular
+  chat and locally, they should always have unique `protocol/id`."
   [id->command access-scope->command-id {:keys [chat-id group-chat public?]}]
   (let [global-access-scope (cond-> #{}
                               (not group-chat) (conj :personal-chats)
                               (and group-chat (not public?)) (conj :group-chats) 
                               public? (conj :public-chats)) 
-        chat-access-scope   (conj global-access-scope chat-id)] 
-    (select-keys id->command (into (get access-scope->command-id global-access-scope)
-                                   (get access-scope->command-id chat-access-scope)))))
+        chat-access-scope   #{chat-id}]
+    (reduce (fn [acc command-id]
+              (let [{:keys [type] :as command-props} (get id->command command-id)]
+                (assoc acc (protocol/id type) command-props)))
+            {} 
+            (concat (get access-scope->command-id global-access-scope)
+                    (get access-scope->command-id chat-access-scope)))))
+
+(defn- current-param-position [input-text selection]
+  (when selection
+    (when-let [subs-input-text (subs input-text 0 selection)]
+      (let [input-params   (input-model/split-command-args subs-input-text)
+            param-index    (dec (count input-params))
+            wrapping-count (get (frequencies subs-input-text) arg-wrapping-char 0)]
+        (if (and (string/ends-with? subs-input-text space-char)
+                 (even? wrapping-count))
+          param-index
+          (dec param-index))))))
+
+(defn- command-completion [input-params params]
+  (let [input-params-count (count input-params)
+        params-count       (count params)]
+    (cond
+      (= input-params-count params-count) :complete
+      (< input-params-count params-count) :less-then-needed
+      (> input-params-count params-count) :more-than-needed)))
+
+(defn selected-chat-command
+  "Takes input text, text-selection and `protocol/id->command-props` map (result of 
+  the `chat-commands` fn) and returns the corresponding `command-props` entry, 
+  or nothing if input text doesn't match any available command.
+  Besides keys `:params` and `:type`, the returned map contains: 
+  * `:input-params` - parsed parameters from the input text as map of `param-id->entered-value`
+  # `:current-param-position` - index of the parameter the user is currently focused on (cursor position
+  in relation to parameters), could be nil if the input is not selected
+  # `:command-completion` - indication of command completion, possible values are `:complete`,
+  `:less-then-needed` and `more-then-needed`"
+  [input-text text-selection id->command-props]
+  (when (input-model/starts-as-command? input-text)
+    (let [[command-name & input-params] (input-model/split-command-args input-text)]
+      (when-let [{:keys [params] :as command-props} (get id->command-props (subs command-name 1))] ;; trim leading `/` for lookup
+        command-props
+        (let [input-params (into {}
+                                 (keep-indexed (fn [idx input-value]
+                                                 (when (not (string/blank? input-value))
+                                                   (when-let [param-name (get-in params [idx :id])] 
+                                                     [param-name input-value]))))
+                                 input-params)]
+          (assoc command-props
+                 :input-params input-params 
+                 :current-param-position (current-param-position input-text text-selection)
+                 :command-completion (command-completion input-params params)))))))
 
 (defn set-command-parameter
   "Set value as command parameter for the current chat"

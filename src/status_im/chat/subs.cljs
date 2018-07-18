@@ -65,12 +65,6 @@
    (some-> ui-props :validation-messages commands-utils/generate-hiccup)))
 
 (reg-sub
- :result-box-markup
- :<- [:get-current-chat-ui-props]
- (fn [ui-props]
-   (some-> ui-props :result-box :markup commands-utils/generate-hiccup)))
-
-(reg-sub
  :chat-input-margin
  :<- [:get :keyboard-height]
  (fn [kb-height]
@@ -336,10 +330,9 @@
 (reg-sub
  :show-suggestions-view?
  :<- [:get-current-chat-ui-prop :show-suggestions?]
- :<- [:get-current-chat]
- :<- [:selected-chat-command]
+ :<- [:get-current-chat] 
  :<- [:get-all-available-commands]
- (fn [[show-suggestions? {:keys [input-text]} selected-command commands]]
+ (fn [[show-suggestions? {:keys [input-text]} commands]]
    (and (or show-suggestions? (input-model/starts-as-command? (string/trim (or input-text ""))))
         (seq commands))))
 

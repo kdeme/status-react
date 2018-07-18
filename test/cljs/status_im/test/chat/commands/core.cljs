@@ -10,7 +10,7 @@
 (deftype TestCommand []
   protocol/Command
   (id [_]
-    :test-command)
+    "test-command")
   (scope [_]
     #{:personal-chats :group-chats :public-chats})
   (parameters [_]
@@ -41,7 +41,7 @@
 (deftype AnotherTestCommand []
   protocol/Command
   (id [_]
-    :another-test-command)
+    "another-test-command")
   (scope [_]
     #{:public-chats})
   (parameters [_]
@@ -118,6 +118,28 @@
                    (core/chat-commands (get-in fx [:db :id->command])
                                        (get-in fx [:db :access-scope->command-id])
                                        {:chat-id "contact"})))))))
+
+(deftest selected-chat-command-test
+  (let [fx       (core/index-commands #{TestCommandInstance AnotherTestCommandInstance} {:db {}})
+        commands (core/chat-commands (get-in fx [:db :id->command])
+                                     (get-in fx [:db :access-scope->command-id])
+                                     {:chat-id    "contact"})]
+    (testing "Text not beggining with the command special charactes `/` is recognised"
+      (is (not (core/selected-chat-command "test-command 1" nil commands))))
+    (testing "Command not matching any available commands is not recognised as well"
+      (is (not (core/selected-chat-command "/another-test-command" nil commands))))
+    (testing "Available correctly entered command is recognised"
+      (is (= TestCommandInstance
+             (get (core/selected-chat-command "/test-command" nil commands) :type))))
+    (testing "Command completion and param position are determined as well"
+      (let [{:keys [current-param-position command-completion]}
+            (core/selected-chat-command "/test-command 1 " 17 commands)]
+        (is (= 1 current-param-position))
+        (is (= :less-then-needed command-completion)))
+      (let [{:keys [current-param-position command-completion]}
+            (core/selected-chat-command "/test-command 1 2 3" 20 commands)]
+        (is (= 2 current-param-position))
+        (is (= :complete command-completion))))))
 
 (deftest set-command-parameter-test
   (testing "Setting command parameter correctly updates the text input"
