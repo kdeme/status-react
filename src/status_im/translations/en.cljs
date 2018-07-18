@@ -30,6 +30,7 @@
    :on                                   "On"
    :off                                  "Off"
    :mailserver-connection-error          "Could not connect to mailserver"
+   :dont-allow                           "Don't Allow"
 
    :camera-access-error                  "To grant the required camera permission, please go to your system settings and make sure that Status > Camera is selected."
    :photos-access-error                  "To grant the required photos permission, please go to your system settings and make sure that Status > Photos is selected."
@@ -690,4 +691,7 @@
    :dapp                                 "ÐApp"
    :selected                             "Selected"
    :selected-dapps                       "Selected ÐApps"
-   :browser-warning                      "Connection is not proven secure. Make sure you trust this site before signing transactions or entering personal data."})
+   :browser-warning                      "Connection is not proven secure. Make sure you trust this site before signing transactions or entering personal data."
+   :make-sure-you-trust-dapp             "Make sure that you trust this DApp"
+   :would-like-to-access                 "Would like to Access"
+   :your-contact-code                    "Your Contact Code"})

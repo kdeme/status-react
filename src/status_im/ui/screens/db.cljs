@@ -210,7 +210,8 @@
                  :transport/chats
                  :transport/discovery-filter
                  :desktop/desktop
-                 :dimensions/window]
+                 :dimensions/window
+                 :dapps/permissions]
                 :opt-un
                 [::current-public-key
                  ::modal
