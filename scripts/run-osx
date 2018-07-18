@@ -61,7 +61,7 @@ open -a /Applications/Genymotion.app/Contents/MacOS/player.app --args --vm-name 
 fi
 
 # Install deps
-lein deps && npm install
+npm install
 
 cd android && ./gradlew react-native-android:installArchives && cd ../
 

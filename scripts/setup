@@ -38,7 +38,6 @@ install_cocoapods
 ####
 echo && setup_header "Installing dependencies..."
 
-dependency_setup lein deps
 dependency_setup npm install
 
 dependency_setup \

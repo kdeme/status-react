@@ -30,7 +30,6 @@ setup: ##@prepare Install all the requirements for status-react
 	./scripts/setup
 
 prepare: ##@prepare Install dependencies and prepare workspace
-	lein deps
 	npm install
 
 prepare-ios: prepare ##@prepare Install iOS specific dependencies
