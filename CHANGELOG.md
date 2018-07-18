@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Fixed parsing of messages containing multiple dots (elipsis)
 - Fixed Webview: Screen cut off when using ERC dEX DApp [#3131]
 - Fixed links targeting new tabs [#4413]
+- Fixed blinking token amounts in transaction history
+- Fixed/corrected fiat values in /send and /request messages
+- Automatically converts recovery phrase to lowercase during account recovery
+- Fixed unread messages counter
+- Fixed incoming messages timestamp
 - Fixed gas validation: Showing message when total amount being sent plus the max gas cost exceed the balance [#3441]
  
 ## [0.9.22] - 2018-07-09
